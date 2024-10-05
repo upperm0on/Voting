@@ -1,0 +1,8 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+
+<form method="POST" action="." class="forms">{% csrf_token %}</form>
+<script type="application/json" id="json_content">
+  {{ filtered_list|safe }}
+</script>
+<script src="{% static 'js/index.js' %}"></script>
+{% endblock %}

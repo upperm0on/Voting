@@ -1,0 +1,188 @@
+{% extends "base.html" %} {% block summary_status %} active {% endblock %} {%block content %}
+<!-- Load Google Charts Library -->
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<!-- Load jsPDF Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<button id="exportButton">Export Results as CSV</button>
+<button id="exportPdfButton">Export Results as PDF</button>
+
+<script type="text/javascript">
+  // Load the Visualization API and the corechart package.
+  google.charts.load('current', {'packages':['corechart']});
+
+  // Pass the voting data from Django to JavaScript
+  const data = {{ json_data|safe }};
+
+  // When Google Charts is ready, draw the charts
+  google.charts.setOnLoadCallback(drawAllCharts);
+
+  function drawAllCharts() {
+      // Loop over each category and create charts
+      data.forEach((categoryData, index) => {
+          drawColumnChart(categoryData, index); // Changed to column chart
+          drawPieChart(categoryData, index);
+          announceWinner(categoryData, index);
+      });
+  }
+
+  // Draw Column Chart (Vertical Bar Chart) for each category
+  function drawColumnChart(categoryData, index) {
+      const columnData = new google.visualization.DataTable();
+      columnData.addColumn('string', 'Individual');
+      columnData.addColumn('number', 'Votes');
+
+      categoryData.details.forEach(detail => {
+          columnData.addRow([detail.individual, detail.votes]);
+      });
+
+      const columnOptions = {
+          title: `Votes for ${categoryData.category}`,
+          chartArea: {width: '70%', height: '70%'}, // Adjust chart area
+          hAxis: {
+              title: 'Individual',
+              minValue: 0
+          },
+          vAxis: {
+              title: 'Total Votes'
+          }
+      };
+
+      const columnChart = new google.visualization.ColumnChart(document.getElementById(`bar_chart_${index}`)); // Changed to ColumnChart
+      columnChart.draw(columnData, columnOptions);
+  }
+
+  // Draw Pie Chart for each category
+  function drawPieChart(categoryData, index) {
+      const pieData = new google.visualization.DataTable();
+      pieData.addColumn('string', 'Individual');
+      pieData.addColumn('number', 'Votes');
+
+      categoryData.details.forEach(detail => {
+          pieData.addRow([detail.individual, detail.votes]);
+      });
+
+      const pieOptions = {
+          title: `Votes Distribution for ${categoryData.category}`,
+          is3D: true,
+      };
+
+      const pieChart = new google.visualization.PieChart(document.getElementById(`pie_chart_${index}`));
+      pieChart.draw(pieData, pieOptions);
+  }
+
+  // Function to calculate and announce the winner of the category
+  function announceWinner(categoryData, index) {
+      const totalVotes = categoryData.details.reduce((sum, detail) => sum + detail.votes, 0);
+
+      // Find the individual with the highest votes
+      const winner = categoryData.details.reduce((max, detail) => {
+          return detail.votes > max.votes ? detail : max;
+      }, categoryData.details[0]);
+
+      // Display the winner and their vote count
+      const winnerElement = document.getElementById(`winner_${index}`);
+      winnerElement.innerHTML = `<strong>Winner:</strong> ${winner.individual} with ${winner.votes} votes (out of ${totalVotes} total votes)`;
+  }
+
+  // Export Results as CSV
+  document.getElementById('exportButton').addEventListener('click', () => {
+      let csvContent = "data:text/csv;charset=utf-8,"; // CSV MIME type
+      csvContent += "Category,Individual,Votes\n";
+
+      data.forEach(category => {
+          category.details.forEach(detail => {
+              csvContent += `${category.category},${detail.individual},${detail.votes}\n`;
+          });
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "voting_results.csv");
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  });
+
+  // Export Results as PDF
+  document.getElementById('exportPdfButton').addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Add a title
+      doc.setFontSize(22);
+      doc.setTextColor(40, 40, 40);
+      doc.text("Voting Results", 14, 20);
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+
+      // Initialize vertical position for text
+      let y = 30;
+
+      // Set table column widths
+      const colWidths = [50, 80, 30]; // Adjust widths as necessary
+      const rowHeight = 10;
+
+      data.forEach(category => {
+          // Add category title
+          doc.setFontSize(16);
+          doc.setTextColor(0, 102, 204); // Blue color for category
+          doc.text(category.category, 14, y);
+          y += 10;
+
+          // Create header for the table
+          doc.setFontSize(12);
+          doc.setTextColor(0); // Reset text color to black
+          doc.text("Individual", 14, y);
+          doc.text("Votes", 100, y);
+          y += rowHeight;
+
+          // Add details
+          category.details.forEach(detail => {
+              doc.setFontSize(12);
+              doc.text(detail.individual, 14, y);
+              doc.text(detail.votes.toString(), 100, y);
+              y += rowHeight;
+          });
+
+          // Add a line break after each category
+          y += 5;
+      });
+
+      // Save the PDF
+      doc.save('voting_results.pdf');
+  });
+</script>
+
+<!-- Create divs to hold charts and winner announcements for each category, using Bootstrap row and columns -->
+<div class="container">
+  {% for category in json_data %}
+  <h3>{{ category.category }}</h3>
+
+  <!-- Winner Announcement -->
+  <p id="winner_{{ forloop.counter0 }}" class="text-success"></p>
+
+  <!-- Row to contain both bar and pie chart -->
+  <div class="row mb-5">
+    <!-- Column Chart (1st Column, 6 grid spaces) -->
+    <div class="col-md-6">
+      <div
+        id="bar_chart_{{ forloop.counter0 }}"
+        style="width: 100%; height: 500px"
+      ></div>
+    </div>
+
+    <!-- Pie Chart (2nd Column, 6 grid spaces) -->
+    <div class="col-md-6">
+      <div
+        id="pie_chart_{{ forloop.counter0 }}"
+        style="width: 100%; height: 500px"
+      ></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
