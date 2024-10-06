@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import landingPage, add_category, add_individual, read_categories, detail_category, detail_individual, vote_summary
+from .views import landingPage, add_category, add_individual, read_categories, detail_category, detail_individual, vote_summary, auth_page, login_page, logout_request
 
 urlpatterns = [
     path('', landingPage, name="landingPage"),
@@ -9,4 +9,7 @@ urlpatterns = [
     path('detail_category/<int:id>/', detail_category, name="detail_category"),
     path('detail_individual/<int:id>/', detail_individual, name='detail_individual'),
     path('vote_summary/', vote_summary, name="vote_summary"),
+    path('auth_page/', auth_page, name="auth_page"),
+    path('login_page/', login_page, name='login_page'),
+    path('logout/', logout_request, name='logout_page'),
 ]

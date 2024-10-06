@@ -1,5 +1,23 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <!-- Title Section -->
+  <div class="row">
+    <div class="col text-center">
+      <h1 class="display-4 font-weight-bold">{{ obj.name }}</h1>
+      <hr class="my-4" style="width: 50%; margin: 0 auto" />
+    </div>
+  </div>
 
-{% block content %} <h1>{{ obj.name }}</h1>
-    <img src="{{ obj.picture.url }}">
+  <!-- Image Section -->
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-8 text-center">
+      <img
+        src="{{ obj.picture.url }}"
+        class="img-fluid rounded shadow-lg"
+        alt="{{ obj.name }}"
+        style="max-height: 500px; object-fit: cover"
+      />
+    </div>
+  </div>
+</div>
 {% endblock %}

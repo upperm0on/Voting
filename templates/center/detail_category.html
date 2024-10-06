@@ -1,10 +1,27 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
+<div class="container">
+  <!-- Add Individual Button with FontAwesome -->
+  <button type="button" class="btn btn-outline-primary mb-4">
+    <a href="{% url 'add_individual' %}" class="nav-link">
+      <i class="fas fa-user-plus"></i> Add Individual
+    </a>
+  </button>
 
-{% block content %}
-    <button type="button" class="btn btn-outline-primary mb-4"><a href="{% url 'add_individual' %}" class="nav-link">Add Individual</a></button>
-    <ul class="list-group">
-        {% for qs in queryset %}
-            <li class="list-group-item"><a href="{% url 'detail_individual' qs.id %}" class="nav-link">{{ qs }}</a></li>
-        {% endfor %}
-    </ul>
+  <!-- List of Individuals with FontAwesome -->
+  <ul class="list-group">
+    {% for qs in queryset %}
+    <li
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      <a href="{% url 'detail_individual' qs.id %}" class="nav-link">
+        <i class="fas fa-user"></i> {{ qs }}
+      </a>
+      <!-- Optional Arrow Icon for navigation -->
+      <span class="badge badge-primary badge-pill">
+        <i class="fas fa-chevron-right"></i>
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}

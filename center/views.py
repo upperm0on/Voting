@@ -1,8 +1,12 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from .view_add_category import View_category
 from .models import Category, Individual, Vote_status
 from .view_add_individual import View_Individual
 # Create your views here.
+
+from django.contrib.auth.models import User
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 
 import json
 
@@ -11,6 +15,44 @@ from django.http import JsonResponse
 from .models import Vote_status, Category, Individual  # Make sure to import your models
 import json
 
+def auth_page(request): 
+    template_name = "authenticate.html"
+    if request.method == 'POST': 
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = User.objects.create(username=username, password=password) 
+        login(request, user) 
+        return redirect('landingPage')
+    context = {
+        'auth_status': 'Sign Up',
+    }
+    return render(request, template_name, context)
+
+def logout_request(request): 
+    logout(request)
+    return redirect('landingPage')
+
+def login_page(request): 
+    template_name = "authenticate.html"
+    error_msg = ''
+    if request.method == 'POST': 
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password) 
+        if user:
+            login(request, user) 
+            return redirect('landingPage')
+        else: 
+            error_msg = 'The Username and password you entered does not exist in the database... Try Again'
+    context = {
+        'error_msg': error_msg,
+        'auth_status': 'Login Here',
+    }
+    return render(request, template_name, context)
+
+@login_required(login_url='/login_page/')
 def landingPage(request):
     # This will hold the final structured list for rendering
     new_list = []
@@ -34,7 +76,6 @@ def landingPage(request):
             'category': obj.name,
             'individuals': individual_list
         })
-
     # Convert the list of dictionaries to a JSON string
     new_list_json = json.dumps(new_list)
 
@@ -62,8 +103,7 @@ def landingPage(request):
     template_name = 'center/index.html'
     return render(request, template_name, context)
 
-
-
+@login_required(login_url='/login_page/')
 def add_category(request):
     form = View_category()
     if request.method == "POST":
@@ -77,6 +117,7 @@ def add_category(request):
     template_name = 'center/add_category.html'
     return render(request, template_name, context)
 
+@login_required(login_url='/login_page/')
 def add_individual(request):
     form = View_Individual()
     if request.method == 'POST':
@@ -91,6 +132,7 @@ def add_individual(request):
     }
     return render(request, template_name, context)
 
+@login_required(login_url='/login_page/')
 def read_categories(request):
     object = Category.objects.all()
     template_name = 'center/read_category.html'
@@ -99,6 +141,7 @@ def read_categories(request):
     }
     return render(request, template_name, context)
 
+@login_required(login_url='/login_page/')
 def detail_category(request, id):
     template_name = 'center/detail_category.html',
     queryset = Individual.objects.filter(position__id=id)
@@ -107,6 +150,7 @@ def detail_category(request, id):
     }
     return render(request, template_name, context)
 
+@login_required(login_url='/login_page/')
 def detail_individual(request, id):
     individual = Individual.objects.get(id=id)
     template_name = 'center/detail_individual.html'
@@ -115,6 +159,7 @@ def detail_individual(request, id):
     }
     return render(request, template_name, context)
 
+@login_required(login_url='/login_page/')
 def vote_summary(request):
     all_votes = Vote_status.objects.all()
     category = Category.objects.all()
@@ -126,7 +171,7 @@ def vote_summary(request):
         
         individual_list = []
         for qs in individual_qs:
-            vs = Vote_status.objects.filter(voted_for=qs)
+            vs = all_votes.filter(voted_for=qs)
 
             inner_data = {
                 'individual': qs.name,

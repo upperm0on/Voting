@@ -55,6 +55,8 @@ json_content.forEach((content) => {
 const button = document.createElement('button');
 button.type = 'button'; // Change type to button to avoid immediate submission
 button.textContent = 'Submit Forms';
+button.classList.add('btn');
+button.classList.add('btn-success');
 
 // Add an event listener to handle the form submission
 button.addEventListener('click', () => {
