@@ -4,8 +4,6 @@ const json_content = JSON.parse(document.querySelector('#json_content').textCont
 // Select the form where the lists will be appended
 const form = document.querySelector('.forms');
 
-// Clear existing content in the form (if needed) // Clear previous content if any
-
 // Iterate through the parsed JSON content
 json_content.forEach((content) => {
     // Get the category name and individuals
@@ -30,14 +28,45 @@ json_content.forEach((content) => {
         const listItem = document.createElement('li');
         listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center'); // Bootstrap classes for list item
 
-        // Create content for the list item
+        // Create a unique id for the radio input
+        const radioId = `radio_${ind.id}`;
+
+        // Create content for the list item with a label that acts like a button
         listItem.innerHTML = `
             <div>
                 <img src="${ind.picture}" alt="${ind.name}" style="width:200px; height:auto; margin-right:10px;">
                 <span style='text-transform: capitalize;'>${ind.name}</span>
             </div>
-            <input type="radio" name="list_item_category_${categoryName}" value="${ind.id}">
+            <input type="radio" id="${radioId}" name="list_item_category_${categoryName}" value="${ind.id}" style="display:none;">
+            <label for="${radioId}" class="btn btn-outline-primary me-2 vote-button">
+                Vote
+            </label>
         `;
+
+        // Add click event to the label to change its appearance and mark the vote
+        const input = listItem.querySelector(`input[type="radio"]`);
+        const label = listItem.querySelector(`label[for="${radioId}"]`);
+
+        label.addEventListener('click', () => {
+            // Deselect other radio buttons in the same group
+            const radios = form.querySelectorAll(`input[name="list_item_category_${categoryName}"]`);
+            radios.forEach(r => {
+                if (r !== input) {
+                    r.checked = false; // Deselect other radios
+                    // Reset other labels to original state
+                    const otherLabel = form.querySelector(`label[for="${r.id}"]`);
+                    otherLabel.classList.remove('btn-primary');
+                    otherLabel.classList.add('btn-outline-primary');
+                    otherLabel.textContent = 'Vote'; // Reset text
+                }
+            });
+            input.checked = true; // Select this radio button
+
+            // Change the label to indicate the vote has been registered
+            label.classList.remove('btn-outline-primary');
+            label.classList.add('btn-primary'); // Change button to primary
+            label.textContent = 'Voted'; // Change text to Voted
+        });
 
         // Append the new list item to the list group
         listGroup.appendChild(listItem);
@@ -55,8 +84,7 @@ json_content.forEach((content) => {
 const button = document.createElement('button');
 button.type = 'button'; // Change type to button to avoid immediate submission
 button.textContent = 'Submit Forms';
-button.classList.add('btn');
-button.classList.add('btn-success');
+button.classList.add('btn', 'btn-success');
 
 // Add an event listener to handle the form submission
 button.addEventListener('click', () => {
