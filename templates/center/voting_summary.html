@@ -1,11 +1,50 @@
-{% extends "base.html" %} {% block summary_status %} active {% endblock %} {%block content %}
+{% extends "base.html" %} {% block summary_status %} active {% endblock %}
+{%block content %}
 <!-- Load Google Charts Library -->
 <script src="https://www.gstatic.com/charts/loader.js"></script>
 <!-- Load jsPDF Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<button id="exportButton">Export Results as CSV</button>
-<button id="exportPdfButton">Export Results as PDF</button>
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Voting Results</h2>
+
+  <!-- Export Buttons -->
+  <div class="text-center mb-4">
+    <button id="exportButton" class="btn btn-outline-primary me-2">
+      <i class="fas fa-file-csv"></i> Export Results as CSV
+    </button>
+    <button id="exportPdfButton" class="btn btn-outline-danger">
+      <i class="fas fa-file-pdf"></i> Export Results as PDF
+    </button>
+  </div>
+
+  <!-- Create divs to hold charts and winner announcements for each category -->
+  {% for category in json_data %}
+  <h3 class="mt-4">{{ category.category }}</h3>
+
+  <!-- Winner Announcement -->
+  <p id="winner_{{ forloop.counter0 }}" class="text-success"></p>
+
+  <!-- Row to contain both bar and pie chart -->
+  <div class="row mb-5">
+    <!-- Column Chart (1st Column, 6 grid spaces) -->
+    <div class="col-md-6">
+      <div
+        id="bar_chart_{{ forloop.counter0 }}"
+        style="width: 100%; height: 400px"
+      ></div>
+    </div>
+
+    <!-- Pie Chart (2nd Column, 6 grid spaces) -->
+    <div class="col-md-6">
+      <div
+        id="pie_chart_{{ forloop.counter0 }}"
+        style="width: 100%; height: 400px"
+      ></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
 
 <script type="text/javascript">
   // Load the Visualization API and the corechart package.
@@ -155,34 +194,5 @@
       doc.save('voting_results.pdf');
   });
 </script>
-
-<!-- Create divs to hold charts and winner announcements for each category, using Bootstrap row and columns -->
-<div class="container">
-  {% for category in json_data %}
-  <h3>{{ category.category }}</h3>
-
-  <!-- Winner Announcement -->
-  <p id="winner_{{ forloop.counter0 }}" class="text-success"></p>
-
-  <!-- Row to contain both bar and pie chart -->
-  <div class="row mb-5">
-    <!-- Column Chart (1st Column, 6 grid spaces) -->
-    <div class="col-md-6">
-      <div
-        id="bar_chart_{{ forloop.counter0 }}"
-        style="width: 100%; height: 500px"
-      ></div>
-    </div>
-
-    <!-- Pie Chart (2nd Column, 6 grid spaces) -->
-    <div class="col-md-6">
-      <div
-        id="pie_chart_{{ forloop.counter0 }}"
-        style="width: 100%; height: 500px"
-      ></div>
-    </div>
-  </div>
-  {% endfor %}
-</div>
 
 {% endblock %}
