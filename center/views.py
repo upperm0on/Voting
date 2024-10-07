@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
-from .view_add_category import View_category
-from .models import Category, Individual, Vote_status
+from .view_add_category import View_category, View_voter_class
+from .models import Category, Individual, Vote_status, Voter
 from .view_add_individual import View_Individual
 # Create your views here.
 
@@ -12,8 +12,9 @@ import json
 
 from django.shortcuts import render
 from django.http import JsonResponse
-from .models import Vote_status, Category, Individual  # Make sure to import your models
+from .models import Vote_status, Category, Individual, Voter  # Make sure to import your models
 import json
+
 
 def auth_page(request): 
     template_name = "authenticate.html"
@@ -54,12 +55,18 @@ def login_page(request):
 
 @login_required(login_url='/login_page/')
 def landingPage(request):
-    # This will hold the final structured list for rendering
-    new_list = []
+    # This will hold the final structured list for rendering 
+    if not request.session.get('code') or None:
+        return redirect('get_code')
     
+    else: 
+        code = request.session.get('code')
+    
+    print(request.session.get('code'))
+    new_list = []
+        
     # Get all categories
     category_qs = Category.objects.all()
-
     # Prepare the structured data for rendering
     for obj in category_qs:
         append_individual = Individual.objects.filter(position=obj)
@@ -89,13 +96,18 @@ def landingPage(request):
             if key.startswith('list_item_category_'):
                 # Extract the category name and the voted individual's ID
                 category_name = key[len('list_item_category_'):]  # Get the category name
-                individual_id = value[0]  # Get the selected individual's ID
-                
+                individual_id = value  # Get the selected individual's ID    
                 # Create and save a new Vote_status object
                 vote = Vote_status(
                     voted_for=Individual.objects.get(id=individual_id)
                 )
-                vote.save()  # Save the vote to the database
+                vote.save()
+                obj = Voter.objects.get(voter_id=code)
+                obj.voter_status = 'Voted'
+                obj.save()
+                request.session['code'] = None
+                return redirect('get_code')
+                print(individual_id)# Save the vote to the database
     context = {
         'filtered_list': new_list_json,  # Now, new_list is valid JSON data
     }
@@ -189,3 +201,49 @@ def vote_summary(request):
         'json_data': json.dumps(data),
     }
     return render(request, template_name, context)
+
+def get_code(request): 
+    template_name = 'center/get_code.html'
+    errorMsg = ''
+    
+    if request.method == 'POST':
+        code = request.POST.get('voter_id')
+        
+        try: 
+            voter_indv = Voter.objects.get(voter_id=code)
+            
+            # Check if voter has already voted
+            if voter_indv.voter_status == 'Voted': 
+                errorMsg = 'Code Entered is already used.'
+            else:
+                # Store voter ID in session and redirect to landingPage
+                request.session['code'] = voter_indv.voter_id
+                return redirect('landingPage')
+        
+        except Voter.DoesNotExist:  # Corrected to Voter.DoesNotExist
+            errorMsg = 'Code Entered is invalid.'
+        
+    context = {
+        'errorMsg': errorMsg,
+    }
+    return render(request, template_name, context)
+
+
+def generate_code(request):
+    forms = View_voter_class()
+    if request.method == 'POST':
+        forms = View_voter_class(request.POST)
+        if forms.is_valid():
+            instance = forms.save()
+            voters_numbers = request.POST['vote_numbers']
+            generated_codes = []
+            for vote in range(int(voters_numbers)):
+                voter_class_name = forms.cleaned_data['voter_class_name']
+                new_id = f'{voter_class_name[:3]}{vote}'
+                Voter.objects.create(voter_id=new_id, voter_class=instance)
+                generated_codes.append(new_id)  # Add generated ID to the list
+            
+            # Send the generated codes as a JSON response
+            return JsonResponse({'codes': generated_codes}, status=200)
+    
+    return render(request, 'center/generate_code.html', {'forms': forms})

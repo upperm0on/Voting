@@ -1,0 +1,116 @@
+{% extends "base.html" %} {% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow p-4" style="border-radius: 15px">
+        <div class="card-body">
+          <h3 class="text-center mb-4">Generate Voter Codes</h3>
+          <form id="generateForm" method="POST">
+            {% csrf_token %}
+
+            <div class="mb-3">{{ forms.as_p }}</div>
+
+            <div class="mb-3">
+              <label for="vote_numbers" class="form-label"
+                >Expected Voters</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                id="vote_numbers"
+                placeholder="Enter number of voters"
+                name="vote_numbers"
+                required
+              />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+              Generate
+            </button>
+          </form>
+
+          <!-- CSV and PDF download buttons -->
+          <button id="downloadCSV" class="btn btn-success w-100 mt-3 d-none">
+            Download CSV
+          </button>
+          <button id="downloadPDF" class="btn btn-warning w-100 mt-3 d-none">
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include jsPDF for PDF generation -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+  document
+    .getElementById("generateForm")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      fetch(".", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          const codes = data.codes;
+          if (codes && codes.length > 0) {
+            // Show the download buttons
+            document.getElementById("downloadCSV").classList.remove("d-none");
+            document.getElementById("downloadPDF").classList.remove("d-none");
+
+            // CSV Download Handler
+            document
+              .getElementById("downloadCSV")
+              .addEventListener("click", function () {
+                downloadCSV(codes);
+              });
+
+            // PDF Download Handler
+            document
+              .getElementById("downloadPDF")
+              .addEventListener("click", function () {
+                downloadPDF(codes);
+              });
+          }
+        })
+        .catch((error) => console.error("Error:", error));
+    });
+
+  // Function to download CSV
+  function downloadCSV(codes) {
+    let csvContent = "data:text/csv;charset=utf-8," + codes.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "generated_codes.csv");
+    document.body.appendChild(link);
+    link.click();
+  }
+
+  // Function to download PDF using jsPDF
+  function downloadPDF(codes) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.text("Generated Voter Codes", 10, 10);
+
+    let y = 20;
+    codes.forEach((code, index) => {
+      doc.text(`${index + 1}. ${code}`, 10, y);
+      y += 10;
+    });
+
+    doc.save("generated_codes.pdf");
+  }
+</script>
+{% endblock %}

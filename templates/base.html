@@ -19,6 +19,7 @@
       rel="stylesheet"
     />
   </head>
+  {% load static %}
   <style type="text/css">
     body {
       background: #d5d5d5;
@@ -43,7 +44,7 @@
   <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-dark mb-4">
       <a class="navbar-brand text-white" href="{% url 'landingPage' %}">
-        <i class="fas fa-vote-yea"></i> KSHTS Vote
+        <img src='{% static "images/logofile.jpeg" %}' style='height: 50px; width: auto;'> KSHTS 
       </a>
       <button
         class="navbar-toggler"
@@ -74,9 +75,11 @@
             href="{% url 'vote_summary' %}"
             ><i class="fas fa-chart-pie"></i> Vote Summary</a
           >
-          <a class="nav-item nav-link disabled text-white" href="#"
-            ><i class="fas fa-ban"></i> Disabled</a
-          >
+          <a
+            class="nav-item nav-link text-white"
+            href="{% url 'generate_code' %}"
+            ><i class="fas fa-id-card"></i> Generate ID
+          </a>
         </div>
 
         {% if request.user.is_authenticated %}
@@ -113,9 +116,9 @@
         <div class="row">
           <!-- About Section -->
           <div class="col-md-6">
-            <h5 class="font-weight-bold">About the Developer</h5>
+            <h5 class="font-weight-bold">About the Developers</h5>
             <p class="lead mb-3">
-              Designed and developed with passion by <strong>Barimah</strong>.
+              Designed and developed with passion by <strong>Barimah</strong> and <strong>Nana Owusu Achiaw</strong>.
             </p>
             <p class="small">
               Bringing creative ideas to life with modern web technologies.
@@ -145,7 +148,8 @@
         <div class="row mt-4">
           <div class="col text-center">
             <p class="small mb-0">
-              &copy; {{ current_year }} Barimah | All Rights Reserved.
+              &copy; 2024 Barimah and Nana Owusu Achiaw <b> | All
+              Rights Reserved. Property of KSHTS &trade;
             </p>
           </div>
         </div>
