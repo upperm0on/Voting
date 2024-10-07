@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
 from .view_add_category import View_category, View_voter_class
 from .models import Category, Individual, Vote_status, Voter
 from .view_add_individual import View_Individual
@@ -55,20 +55,22 @@ def login_page(request):
 
 @login_required(login_url='/login_page/')
 def landingPage(request):
-    # This will hold the final structured list for rendering 
-    if not request.session.get('code') or None:
+    # Check if the session contains a valid code; otherwise, redirect
+    if not request.session.get('code'):
         return redirect('get_code')
     
-    else: 
-        code = request.session.get('code')
-    
-    print(request.session.get('code'))
+    code = request.session.get('code')
+    print(f"Session code: {code}")
+
+    # This will hold the final structured list for rendering 
     new_list = []
         
     # Get all categories
     category_qs = Category.objects.all()
+
     # Prepare the structured data for rendering
     for obj in category_qs:
+        # Get all individuals related to this category (position)
         append_individual = Individual.objects.filter(position=obj)
         
         individual_list = []
@@ -80,40 +82,61 @@ def landingPage(request):
             })
         
         new_list.append({
-            'category': obj.name,
+            'category': obj.name,  # Use the category name
             'individuals': individual_list
         })
+
     # Convert the list of dictionaries to a JSON string
     new_list_json = json.dumps(new_list)
 
     if request.method == 'POST':
         # Process the votes submitted through the form
         vote_data = request.POST
+
+        # Debugging: Print all the data from the POST request
+        print("Submitted vote data:", vote_data)
         
-        # Iterate through each submitted vote
-        for key, value in vote_data.items():
-            # Check if the key corresponds to a vote
+        # Iterate through each submitted vote (category names are now directly used as keys)
+        for key, individual_id in vote_data.items():
             if key.startswith('list_item_category_'):
-                # Extract the category name and the voted individual's ID
+                # Extract the category name from the key
                 category_name = key[len('list_item_category_'):]  # Get the category name
-                individual_id = value  # Get the selected individual's ID    
-                # Create and save a new Vote_status object
-                vote = Vote_status(
-                    voted_for=Individual.objects.get(id=individual_id)
-                )
-                vote.save()
-                obj = Voter.objects.get(voter_id=code)
-                obj.voter_status = 'Voted'
-                obj.save()
-                request.session['code'] = None
-                return redirect('get_code')
-                print(individual_id)# Save the vote to the database
+
+                try:
+                    # Debugging: Print the category name and individual ID being processed
+                    print(f"Processing vote for category: {category_name}, individual ID: {individual_id}")
+                    
+                    # Create and save a new Vote_status object
+                    voted_individual = Individual.objects.get(id=individual_id)
+                    vote = Vote_status(
+                        voted_for=voted_individual
+                    )
+                    vote.save()
+
+                except Individual.DoesNotExist:
+                    print(f"Individual with ID {individual_id} not found.")
+                    continue  # Skip to the next vote
+
+        # Update the voter's status after voting
+        try:
+            voter = Voter.objects.get(voter_id=code)
+            voter.voter_status = 'Voted'
+            voter.save()
+        except Voter.DoesNotExist:
+            print(f"Voter with code {code} not found.")
+
+        # Clear the session after successful vote submission
+        request.session['code'] = None
+        return redirect('get_code')
+
+    # Pass the structured list as JSON to the template
     context = {
-        'filtered_list': new_list_json,  # Now, new_list is valid JSON data
+        'filtered_list': new_list_json,
     }
-    
+
     template_name = 'center/index.html'
     return render(request, template_name, context)
+
 
 @login_required(login_url='/login_page/')
 def add_category(request):
@@ -247,3 +270,15 @@ def generate_code(request):
             return JsonResponse({'codes': generated_codes}, status=200)
     
     return render(request, 'center/generate_code.html', {'forms': forms})
+
+def delete_category(request, id):
+    if request.method == 'POST':
+        category = get_object_or_404(Category, id=id)
+        category.delete()
+        return redirect('read_categories') 
+    
+def delete_individual(request, id):
+    if request.method == 'POST':
+        individual = get_object_or_404(Individual, id=id)
+        individual.delete()
+        return redirect('read_categories')
