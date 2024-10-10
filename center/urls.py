@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (landingPage, add_category, add_individual, read_categories, detail_category, detail_individual, vote_summary, auth_page, login_page, logout_request, get_code,
-                    generate_code, delete_category, delete_individual)
+                    generate_code, delete_category, delete_individual, view_unused_codes)
 urlpatterns = [
     path('', landingPage, name='landing_page'),
     path('vote/', landingPage, name="landingPage"),
@@ -17,4 +17,5 @@ urlpatterns = [
     path('generate_code/', generate_code, name='generate_code'),
     path('delete_category/<int:id>/', delete_category, name='delete_category'),
     path('delete_individual/<int:id>/', delete_individual, name='delete_individual'),
+    path('view_codes/', view_unused_codes, name='view_unused_codes'),
 ]

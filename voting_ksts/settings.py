@@ -15,8 +15,11 @@ SECRET_KEY = 'django-insecure-fl_ix-%o_v25r5&dj6rg_wlq)zjl*1xxpaez#e@qfj7ej0ov0-
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    '*',
+    '192.168.0.183',
     '172.20.10.2',
     'localhost',
+    'voting',
 ]
 
 # Application definition

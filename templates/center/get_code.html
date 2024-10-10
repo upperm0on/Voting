@@ -1,31 +1,58 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% load static %} {% block content %}
 <div class="container mt-5">
   <h2 class="text-center mb-4">Voter ID Confirmation</h2>
   <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md col-lg">
       <!-- Adjusting the width using Bootstrap grid -->
-      <form method="POST" action="." class="bg-light p-4 rounded shadow">
+      <form
+        method="POST"
+        action="."
+        class="bg-light p-4 shadow"
+        style="border-radius: 15px"
+      >
         {% csrf_token %}
-        <div class="form-group">
-          <label for="voter_id">Enter your voter ID here</label>
-          <p class="text-danger text-center">{{ errorMsg }}</p>
-          <div class="input-group">
-            <input
-              type="text"
-              class="form-control"
-              id="voter_id"
-              placeholder="Enter your voter ID"
-              name="voter_id"
-              required
-            />
-            <div class="input-group-append">
-              <span class="input-group-text"
-                ><i class="fas fa-id-card"></i
-              ></span>
+        <div
+          class="group-items-here"
+          style="
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+          "
+        >
+          <div class="form-group" style="margin: auto 0">
+            <label
+              for="voter_id"
+              class="text-center text-capitalize"
+              style="font-weight: 500"
+              >Enter your voter ID here</label
+            >
+            <p class="text-danger text-center">{{ errorMsg }}</p>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                id="voter_id"
+                placeholder="Enter your voter ID"
+                name="voter_id"
+                required
+              />
+              <div class="input-group-append">
+                <span class="input-group-text"
+                  ><i class="fas fa-id-card"></i
+                ></span>
+              </div>
             </div>
           </div>
+          <div class="logo_section m-5" style="float: right">
+            <img
+              src='{% static "images/login_logo.jpeg" %}'
+              style="height: 200px; width: auto"
+            />
+          </div>
         </div>
-        <button type="submit" class="btn btn-primary btn-block">Confirm</button>
+        <center>
+          <button type="submit" class="btn btn-primary">Confirm</button>
+        </center>
       </form>
     </div>
   </div>

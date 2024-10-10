@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <ul>
+        {% for qs in queryset %}
+            <li>{{ qs }}</li>
+        {% endfor %}
+    </ul>
+{% endblock content %}

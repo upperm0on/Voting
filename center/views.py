@@ -53,12 +53,15 @@ def login_page(request):
     }
     return render(request, template_name, context)
 
-@login_required(login_url='/login_page/')
 def landingPage(request):
     # Check if the session contains a valid code; otherwise, redirect
     if not request.session.get('code'):
         return redirect('get_code')
-    
+    else: 
+        voter = Voter.objects.get(voter_id = request.session.get('code'))
+        voter.voter_status = 'pending'
+        voter.save()
+        
     code = request.session.get('code')
     print(f"Session code: {code}")
 
@@ -233,10 +236,10 @@ def get_code(request):
         code = request.POST.get('voter_id')
         
         try: 
-            voter_indv = Voter.objects.get(voter_id=code)
-            
+            voter_indv = Voter.objects.filter(voter_id=code)[0]
+
             # Check if voter has already voted
-            if voter_indv.voter_status == 'Voted': 
+            if voter_indv.voter_status == 'Voted' or voter_indv.voter_status == "pending": 
                 errorMsg = 'Code Entered is already used.'
             else:
                 # Store voter ID in session and redirect to landingPage
@@ -282,3 +285,11 @@ def delete_individual(request, id):
         individual = get_object_or_404(Individual, id=id)
         individual.delete()
         return redirect('read_categories')
+    
+
+def view_unused_codes(request): 
+    qs = Voter.objects.filter(voter_status = 'not_voted')
+    context = {
+        'queryset': qs,
+    }
+    return render(request, 'center/view_codes.html', context)
