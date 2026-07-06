@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Eye, Copy, Check } from 'lucide-react';
+import { Plus, Trash2, Eye, Copy, Check, Download, FileSpreadsheet } from 'lucide-react';
 import type { TokenBatch, VoterToken } from '../../../types';
 import { Modal } from '../../../components/ui/Modal';
 
@@ -106,6 +106,52 @@ export const TokensTab: React.FC<TokensTabProps> = ({ apiBase }) => {
     }
   };
 
+  const downloadBatchCSV = async (batchName: string, format: 'list' | 'grid') => {
+    try {
+      const res = await fetch(`${apiBase}/api/voter-tokens/?batch_name=${encodeURIComponent(batchName)}`);
+      if (!res.ok) throw new Error('Failed to load batch tokens for export');
+      const tokens: VoterToken[] = await res.json();
+      
+      let csvContent = '';
+      if (format === 'list') {
+        csvContent = 'Token,Status,Used At\n' + tokens.map(t => {
+          const status = t.is_used ? 'used' : 'unused';
+          const usedAt = t.used_at ? new Date(t.used_at).toLocaleString().replace(/,/g, '') : '';
+          return `${t.token},${status},${usedAt}`;
+        }).join('\n');
+      } else {
+        const colsCount = 5;
+        const rowsCount = Math.ceil(tokens.length / colsCount);
+        const rows = [];
+        
+        for (let r = 0; r < rowsCount; r++) {
+          const rowTokens = [];
+          for (let c = 0; c < colsCount; c++) {
+            const idx = r * colsCount + c;
+            if (idx < tokens.length) {
+              rowTokens.push(tokens[idx].token);
+            } else {
+              rowTokens.push('');
+            }
+          }
+          rows.push(rowTokens.join(','));
+        }
+        csvContent = rows.join('\n');
+      }
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${batchName.replace(/\s+/g, '_')}_tokens_${format}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err: any) {
+      alert(err.message || 'Error exporting batch CSV');
+    }
+  };
+
   const copyTokensToClipboard = () => {
     const text = batchTokens.map(t => t.token).join('\n');
     navigator.clipboard.writeText(text);
@@ -194,6 +240,13 @@ export const TokensTab: React.FC<TokensTabProps> = ({ apiBase }) => {
                           <Eye size={16} />
                         </button>
                         <button 
+                          className="action-icon-btn" 
+                          onClick={() => downloadBatchCSV(batch.batch_name, 'grid')}
+                          title="Download print grid (CSV)"
+                        >
+                          <Download size={16} />
+                        </button>
+                        <button 
                           className="action-icon-btn delete" 
                           onClick={() => handleDeleteBatch(batch.batch_name)}
                           title="Delete entire batch"
@@ -228,19 +281,39 @@ export const TokensTab: React.FC<TokensTabProps> = ({ apiBase }) => {
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  Copy or print these tokens. Total: {batchTokens.length} tokens.
+                  Total: {batchTokens.length} tokens
                 </span>
-                <button 
-                  type="button"
-                  className="btn btn-secondary" 
-                  style={{ padding: '6px 12px', fontSize: '0.85rem' }}
-                  onClick={copyTokensToClipboard}
-                >
-                  {copiedToken === 'all' ? <Check size={16} /> : <Copy size={16} />}
-                  {copiedToken === 'all' ? 'Copied All!' : 'Copy All Tokens'}
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button 
+                    type="button"
+                    className="btn btn-secondary" 
+                    style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                    onClick={copyTokensToClipboard}
+                  >
+                    {copiedToken === 'all' ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{copiedToken === 'all' ? 'Copied!' : 'Copy All'}</span>
+                  </button>
+                  <button 
+                    type="button"
+                    className="btn btn-secondary" 
+                    style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                    onClick={() => downloadBatchCSV(viewingBatchName, 'grid')}
+                  >
+                    <Download size={14} />
+                    <span>Print Grid (CSV)</span>
+                  </button>
+                  <button 
+                    type="button"
+                    className="btn btn-secondary" 
+                    style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                    onClick={() => downloadBatchCSV(viewingBatchName, 'list')}
+                  >
+                    <FileSpreadsheet size={14} />
+                    <span>List (CSV)</span>
+                  </button>
+                </div>
               </div>
 
               {/* Grid of Tokens */}
