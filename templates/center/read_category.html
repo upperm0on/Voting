@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block active_status %} active {% endblock %}
+{% block content %}
+    <button type="button" class="btn btn-primary mb-4"><a href="{% url 'add_category' %}" class="nav-link text-light"> Add Position</a></button>
+<ul class="list-group">
+        {% for obj in object %}
+            <li class="list-group-item"><a href="{% url 'detail_category' obj.id %}" class="nav-link text-dark text-capitalize ">{{ obj }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

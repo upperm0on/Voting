@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <button type="button" class="btn btn-outline-primary mb-4"><a href="{% url 'add_individual' %}" class="nav-link">Add Individual</a></button>
+    <ul class="list-group">
+        {% for qs in queryset %}
+            <li class="list-group-item"><a href="{% url 'detail_individual' qs.id %}" class="nav-link">{{ qs }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
