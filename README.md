@@ -8,10 +8,10 @@ This guide will teach you how the project is organized and how to run it on your
 
 ## 🌟 How the Project is Made
 
-The project is split into two main parts. Think of it like a restaurant:
+The project is split into two main parts:
 
-1. **The Backend (The Kitchen)**: This is built using **Python and Django**. It sits in the background, talks to the database, and processes all the raw data (like candidates, tokens, and votes). It runs on port `1234`.
-2. **The Frontend (The Dining Room)**: This is built using **React, TypeScript, and Vite**. This is the beautiful visual screen that voters and administrators click on. It runs on port `5173`.
+1. **The Backend**: This is built using **Python and Django**. It sits in the background, talks to the database, and processes all the raw data (like candidates, tokens, and votes). It runs on port `1234`.
+2. **The Frontend**: This is built using **React, TypeScript, and Vite**. This is the web application interface that voters and administrators click on. It runs on port `5173`.
 
 ---
 
@@ -19,7 +19,7 @@ The project is split into two main parts. Think of it like a restaurant:
 
 Here is how the files are organized:
 
-* `requirements.txt`: A list of Python libraries needed for the backend kitchen.
+* `requirements.txt`: A list of Python libraries needed for the backend.
 * `db.sqlite3`: The small database file where candidate names, voter tokens, and votes are stored.
 * `manage.py`: The main Python script used to control the backend server.
 * `voting_ksts/`: The core settings and configuration folder for the Django backend.
@@ -37,7 +37,7 @@ Here is how the files are organized:
 
 Follow these steps to start the servers on your computer:
 
-### Step 1: Start the Backend (The Brain)
+### Step 1: Start the Backend
 
 1. Make sure you have **Python** installed on your computer.
 2. Open your terminal or command prompt inside the project folder.
@@ -53,7 +53,7 @@ Follow these steps to start the servers on your computer:
 
 ---
 
-### Step 2: Start the Frontend (The Screens)
+### Step 2: Start the Frontend
 
 1. Make sure you have **Node.js** installed on your computer.
 2. Open a **new** terminal window.
