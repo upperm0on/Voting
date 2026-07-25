@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { KeyRound, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import kstsLogo from '../../../assets/ksts-logo.png';
+
 
 interface VoterTokenFormProps {
   apiBase: string;
@@ -42,14 +44,23 @@ export const VoterTokenForm: React.FC<VoterTokenFormProps> = ({ apiBase, onVerif
   return (
     <div className="wizard-card" style={{ maxWidth: '480px', margin: '40px auto', padding: '32px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{
-          width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'var(--primary-light)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
-          color: 'var(--primary-color)'
-        }}>
-          <KeyRound size={28} />
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+          <img 
+            src={kstsLogo} 
+            alt="KSTS School Crest" 
+            style={{ 
+              height: '110px', 
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1))'
+            }} 
+          />
         </div>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px' }}>Voter Authentication</h2>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: '800', letterSpacing: '-0.025em', color: 'var(--text-main)', marginBottom: '8px' }}>
+          KsTS Ballot System
+        </h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '24px' }}>
+          Enter your 4-digit voting token below to unlock your secure ballot.
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

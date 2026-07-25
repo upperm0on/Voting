@@ -47,9 +47,10 @@ Follow these steps to start the servers on your computer:
    ```
 4. Start the backend server by running:
    ```bash
-   python manage.py runserver 1234
+   python manage.py runserver
    ```
-5. You should see a message saying the server is running on `http://127.0.0.1:1234/`. Keep this terminal window open!
+   > [!NOTE]
+   > Running `python manage.py runserver` automatically binds to `0.0.0.0:1234`, making the server accessible across your local network. It will also print your device's current local IP address and connection links directly in the console.
 
 ---
 
@@ -69,7 +70,9 @@ Follow these steps to start the servers on your computer:
    ```bash
    npm run dev
    ```
-6. Open your web browser and go to `http://localhost:5173/`. You are ready to vote!
+   > [!TIP]
+   > The frontend development server is configured with `--host` enabled inside its config file. It will automatically run on port `5173` and output both local and local network IP URLs in the console (e.g., `http://192.168.1.15:5173`).
+6. Open the printed network URL (e.g., `http://<YOUR_IP>:5173/` or `http://localhost:5173/`) in any browser on the same Wi-Fi network. You are ready to vote!
 
 ---
 

@@ -9,10 +9,12 @@ import type { Category, Candidate } from './types';
 import { VotePage } from './pages/VotePage/VotePage';
 import { AdminPage } from './pages/AdminPage/AdminPage';
 import './App.css';
+import kstsLogo from './assets/ksts-logo.png';
+
 
 // Dynamic API Base Configuration
-const API_BASE = window.location.origin.includes('5173') 
-  ? 'http://127.0.0.1:1234' 
+const API_BASE = import.meta.env.DEV
+  ? `http://${window.location.hostname}:1234` 
   : window.location.origin;
 
 function App() {
@@ -65,8 +67,18 @@ function App() {
             type="button"
             className="brand" 
             onClick={() => setActiveTab('vote')}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
           >
+            <img 
+              src={kstsLogo} 
+              alt="KSTS Logo" 
+              style={{ 
+                height: '32px', 
+                width: '32px', 
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08))'
+              }} 
+            />
             <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)' }}>KsTS Ballot System</span>
           </button>
           

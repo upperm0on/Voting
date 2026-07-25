@@ -24,3 +24,6 @@ Thumbs.db
 .venv/
 venv/
 ENV/
+
+# Media uploads
+/media/
