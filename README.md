@@ -90,6 +90,32 @@ To manage positions, candidates, and voter tokens:
 
 ---
 
+## 🔌 Dynamic API Configuration & Local Networking
+
+Previously, API connections between the React frontend and Django backend were hardcoded to `localhost`. While this worked on a single developer machine, it failed when other devices (like smartphones, tablets, or separate laptops on the same election Wi-Fi network) tried to vote, because `localhost` resolved to those device loops instead of the host server.
+
+### How it is Fixed:
+1. **Dynamic Host Resolution (Frontend)**:
+   In `frontend/src/App.tsx`, the API base endpoint resolves dynamically using the device's viewport hostname:
+   ```typescript
+   const API_BASE = import.meta.env.DEV
+     ? `http://${window.location.hostname}:1234` 
+     : window.location.origin;
+   ```
+   If a voter opens the voting screen on a smartphone at `http://192.168.1.15:5173/`, all voting API calls will dynamically point to `http://192.168.1.15:1234/`.
+
+2. **Network Binding & CORS Configuration (Backend)**:
+   * The Django server is set up to allow requests from all network hosts inside `settings.py` via `CORS_ALLOW_ALL_ORIGINS = True` and `ALLOWED_HOSTS = ['*']`.
+   * The `manage.py` file has been enhanced to automatically bind the server to `0.0.0.0` when running `python manage.py runserver`, exposing the election endpoints to the local subnet.
+
+### Setting Up on a New Machine:
+1. Ensure both the server computer and voter devices are connected to the **same Wi-Fi or LAN network**.
+2. Run `python manage.py runserver` inside the directory. The terminal will print out the local network IP link (e.g. `http://192.168.1.15:1234`).
+3. Move into `frontend/` and run `npm run dev`. It will output the frontend network access link (e.g. `http://192.168.1.15:5173`).
+4. Enter this frontend link on any device on the network to start voting.
+
+---
+
 ## 🎨 Changing Theme Colors and Fonts
 
 If you want to update the theme to use your school's official colors or fonts, you can change the CSS root variables in the style sheet located at:
